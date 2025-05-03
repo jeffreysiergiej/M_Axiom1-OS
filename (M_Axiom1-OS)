@@ -1,0 +1,361 @@
+pip install streamlit
+streamlit run M_Axiom1_Control_Interface.py
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
+import random
+
+# === Global Agent Logic Switch ===
+AGENT_LOGIC_ENABLED = st.sidebar.checkbox("Enable Agent Logic", value=True)
+DISRUPT_MODE = st.sidebar.selectbox("Agent Behavior", ["None", "Disrupt", "Amplify", "Adaptive"])
+VISUAL_MODE = st.sidebar.selectbox("Visualization Style", ["Heatmap", "Causal Graph"])
+
+# === MK-LLM Semantic Command Parser ===
+st.sidebar.markdown("### MK-LLM Semantic Command Input")
+user_cmd = st.sidebar.text_input("Enter a simulation command (e.g. 'enable agent logic'):")
+
+if user_cmd:
+    cmd = user_cmd.lower()
+    if "disable agent logic" in cmd:
+        AGENT_LOGIC_ENABLED = False
+        st.sidebar.info("Agent logic disabled via MK-LLM.")
+    elif "enable agent logic" in cmd:
+        AGENT_LOGIC_ENABLED = True
+        st.sidebar.success("Agent logic enabled via MK-LLM.")
+    elif "disruptors" in cmd and "disable" in cmd:
+        DISRUPT_MODE = "None"
+        st.sidebar.info("Disruptors disabled.")
+    elif "amplify" in cmd:
+        DISRUPT_MODE = "Amplify"
+        st.sidebar.success("Amplify mode activated.")
+    elif "disrupt" in cmd:
+        DISRUPT_MODE = "Disrupt"
+        st.sidebar.warning("Disrupt mode activated.")
+    elif "heatmap" in cmd:
+        VISUAL_MODE = "Heatmap"
+        st.sidebar.info("Visualization set to Heatmap.")
+    elif "causal graph" in cmd:
+        VISUAL_MODE = "Causal Graph"
+        st.sidebar.info("Visualization set to Causal Graph.")
+    elif "center collapse" in cmd:
+        TRIGGER_MODE = "Center Collapse"
+        st.sidebar.success("Trigger mode set to Center Collapse.")
+    elif "manual trigger" in cmd:
+        TRIGGER_MODE = "Manual"
+        st.sidebar.success("Trigger mode set to Manual.")
+    else:
+        st.sidebar.warning("Command not recognized.")
+TRIGGER_MODE = st.sidebar.selectbox("Simulation Trigger", ["Manual", "Center Collapse"])
+
+st.set_page_config(page_title="M+Axiom1 Integrated Engine", layout="wide")
+st.title("M+Axiom1 OS â Unified Simulation Engine")
+st.subheader("Field Collapse with Logic Agents & Causal Echo Mapping")
+
+# Grid setup
+size_x, size_y = 10, 10
+trigger_node = (5, 5)
+num_agents = 6
+max_echo = 5
+
+coords = [(x, y) for y in range(size_y) for x in range(size_x)]
+df = pd.DataFrame(coords, columns=["X", "Y"])
+df["NodeID"] = df.index
+df["EchoLevel"] = 0
+df["Agent"] = False
+df["Disrupt"] = False
+df["Amplify"] = False
+df["ParentID"] = -1
+
+# Inject agents
+agent_ids = np.random.choice(df.index, size=num_agents, replace=False)
+df.loc[agent_ids, "Agent"] = True
+if AGENT_LOGIC_ENABLED:
+    if DISRUPT_MODE == "Disrupt":
+        df.loc[agent_ids[:3], "Disrupt"] = True
+    elif DISRUPT_MODE == "Amplify":
+        df.loc[agent_ids[:3], "Amplify"] = True
+
+# Trigger collapse
+if TRIGGER_MODE == "Center Collapse":
+    df.loc[(df["X"] == trigger_node[0]) & (df["Y"] == trigger_node[1]), "EchoLevel"] = 1
+    df.loc[(df["X"] == trigger_node[0]) & (df["Y"] == trigger_node[1]), "ParentID"] = -1
+
+# Propagation logic
+def propagate(df, max_level):
+    for level in range(1, max_level + 1):
+        active_nodes = df[df["EchoLevel"] == level]
+        for _, row in active_nodes.iterrows():
+            cx, cy = row["X"], row["Y"]
+            for dx in [-1, 0, 1]:
+                for dy in [-1, 0, 1]:
+                    if dx == 0 and dy == 0:
+                        continue
+                    nx_, ny_ = cx + dx, cy + dy
+                    mask = (df["X"] == nx_) & (df["Y"] == ny_) & (df["EchoLevel"] == 0)
+                    for idx in df[mask].index:
+                        if AGENT_LOGIC_ENABLED:
+                            if df.loc[idx, "Disrupt"]:
+                                continue
+                            if df.loc[idx, "Amplify"]:
+                                df.at[idx, "EchoLevel"] = level + 2
+                                df.at[idx, "ParentID"] = row["NodeID"]
+                                continue
+                        df.at[idx, "EchoLevel"] = level + 1
+                        df.at[idx, "ParentID"] = row["NodeID"]
+    return df
+
+df = propagate(df, max_echo)
+
+# Visual output
+if VISUAL_MODE == "Heatmap":
+    grid = np.zeros((size_y, size_x))
+    for _, row in df.iterrows():
+        grid[int(row["Y"]), int(row["X"])] = row["EchoLevel"]
+    fig, ax = plt.subplots()
+    heatmap = ax.imshow(grid, cmap='hot', interpolation='nearest')
+    plt.colorbar(heatmap, ax=ax, label='Echo Level')
+    plt.title("Echo Intensity Heatmap")
+    st.pyplot(fig)
+
+elif VISUAL_MODE == "Causal Graph":
+    G = nx.DiGraph()
+    for _, row in df[df["EchoLevel"] > 0].iterrows():
+        nid = row["NodeID"]
+        pid = row["ParentID"]
+        G.add_node(nid, pos=(row["X"], -row["Y"]), agent=row["Agent"], disrupt=row["Disrupt"], amplify=row["Amplify"])
+        if pid != -1:
+            G.add_edge(pid, nid)
+
+    pos = nx.get_node_attributes(G, 'pos')
+    agents = [n for n, d in G.nodes(data=True) if d["agent"]]
+    disrupts = [n for n, d in G.nodes(data=True) if d["disrupt"]]
+    amplifies = [n for n, d in G.nodes(data=True) if d["amplify"]]
+
+    plt.figure(figsize=(12, 8))
+    nx.draw(G, pos, node_color='lightblue', node_size=300, arrows=True)
+    nx.draw_networkx_nodes(G, pos, nodelist=agents, node_color='orange', node_size=350, label='Agents')
+    nx.draw_networkx_nodes(G, pos, nodelist=disrupts, node_color='red', node_size=350, label='Disruptors')
+    nx.draw_networkx_nodes(G, pos, nodelist=amplifies, node_color='green', node_size=350, label='Amplifiers')
+    plt.title("Causal Graph with Agent Logic")
+    plt.legend()
+    plt.axis("off")
+    st.pyplot(plt)
+
+# === Narration Engine + Timeline Log ===
+if "narration_log" not in st.session_state:
+    st.session_state["narration_log"] = []
+
+# Generate narrative log entries
+if user_cmd:
+    if "enable agent logic" in user_cmd.lower():
+        st.session_state["narration_log"].append("Narrator: Agent logic activated. Network nodes are now aware.")
+    elif "disable agent logic" in user_cmd.lower():
+        st.session_state["narration_log"].append("Narrator: All agents have returned to passive observational state.")
+    elif "disrupt" in user_cmd.lower():
+        st.session_state["narration_log"].append("Narrator: Scalar disruptors deployed. Echo suppression initiated.")
+    elif "amplify" in user_cmd.lower():
+        st.session_state["narration_log"].append("Narrator: Amplification wave initiated. Scalar energy increasing.")
+    elif "heatmap" in user_cmd.lower():
+        st.session_state["narration_log"].append("Narrator: Visual style changed to thermal heatmap projection.")
+    elif "causal graph" in user_cmd.lower():
+        st.session_state["narration_log"].append("Narrator: Rendering causal graph. Showing agent influence paths.")
+    elif "collapse" in user_cmd.lower():
+        st.session_state["narration_log"].append("Narrator: Collapse sequence engaged. Energy condensing.")
+    elif "manual" in user_cmd.lower():
+        st.session_state["narration_log"].append("Narrator: Manual override enabled. Awaiting operator trigger.")
+    else:
+        st.session_state["narration_log"].append(f"Narrator: Command '{user_cmd}' interpreted. Awaiting impact...")
+
+# Display log chronologically
+st.markdown("### Timeline Log")
+for line in st.session_state["narration_log"][-10:][::-1]:  # Show last 10, most recent first
+    st.text(line)
+
+# === Phase 8: Save/Load State + Causal Rewind Engine ===
+
+st.sidebar.markdown("### Simulation State Management")
+
+# Save state button
+if st.sidebar.button("Save Current State"):
+    st.session_state["saved_state"] = {
+        "AGENT_LOGIC_ENABLED": AGENT_LOGIC_ENABLED,
+        "DISRUPT_MODE": DISRUPT_MODE,
+        "VISUAL_MODE": VISUAL_MODE,
+        "TRIGGER_MODE": TRIGGER_MODE,
+        "narration_log": list(st.session_state.get("narration_log", []))
+    }
+    st.sidebar.success("Current simulation state saved.")
+
+# Load state button
+if st.sidebar.button("Load Saved State"):
+    saved = st.session_state.get("saved_state", None)
+    if saved:
+        AGENT_LOGIC_ENABLED = saved["AGENT_LOGIC_ENABLED"]
+        DISRUPT_MODE = saved["DISRUPT_MODE"]
+        VISUAL_MODE = saved["VISUAL_MODE"]
+        TRIGGER_MODE = saved["TRIGGER_MODE"]
+        st.session_state["narration_log"] = saved["narration_log"]
+        st.sidebar.success("Saved state restored.")
+        st.session_state["narration_log"].append("Narrator: Saved state restored from memory imprint.")
+    else:
+        st.sidebar.warning("No saved state found.")
+
+# Rewind timeline by removing the last step
+if st.sidebar.button("Rewind Last Event"):
+    if "narration_log" in st.session_state and len(st.session_state["narration_log"]) > 0:
+        removed = st.session_state["narration_log"].pop()
+        st.sidebar.info(f"Rewound last narrative event: '{removed}'")
+    else:
+        st.sidebar.warning("No events to rewind.")
+
+# === Phase 10: Voice-Activated MK-LLM Control ===
+
+# Import modules (requires installation: pip install SpeechRecognition pyaudio)
+import speech_recognition as sr
+
+st.sidebar.markdown("### Voice Command Input (Beta)")
+
+voice_command = st.sidebar.button("Activate Voice Command")
+
+if voice_command:
+    recognizer = sr.Recognizer()
+    mic = sr.Microphone()
+    
+    with mic as source:
+        st.sidebar.info("Listening for command...")
+        audio = recognizer.listen(source, phrase_time_limit=5)
+    
+    try:
+        command = recognizer.recognize_google(audio).lower()
+        st.sidebar.success(f"Recognized: {command}")
+        user_cmd = command  # Overwrites semantic interpreter
+    except sr.UnknownValueError:
+        st.sidebar.error("Could not understand the command.")
+    except sr.RequestError:
+        st.sidebar.error("Speech recognition service failed.")
+
+# === Phase 11â12: MK-LLM Multi-Agent Dialogue Core ===
+
+# Define agent personas
+AGENTS = {
+    "Architect": {
+        "role": "Predictive systems and harmonic suggestions",
+        "color": "cyan"
+    },
+    "Sentinel": {
+        "role": "Anomaly monitoring, safety overrides",
+        "color": "magenta"
+    },
+    "Echo": {
+        "role": "Historical memory and timestamped logging",
+        "color": "green"
+    }
+}
+
+# Agent response dispatcher
+def route_command_to_agents(command):
+    responses = []
+
+    if "amplify" in command:
+        responses.append(("Architect", "Routing amplitude command to outer shell. Predicting harmonics above threshold."))
+        responses.append(("Sentinel", "Monitoring for structural imbalance. Alert set at echo level 4."))
+        responses.append(("Echo", f"Logged: '{command}' at timestamp {datetime.datetime.now().strftime('%H:%M:%S')}"))
+
+    elif "disrupt" in command:
+        responses.append(("Architect", "Scalar dampening fields activated. Evaluating echo decay constants."))
+        responses.append(("Sentinel", "Warning: possible underflow in edge-boundary nodes."))
+        responses.append(("Echo", f"Logged: '{command}' at timestamp {datetime.datetime.now().strftime('%H:%M:%S')}"))
+
+    elif "collapse" in command:
+        responses.append(("Architect", "Collapse vector centered. Calculating resonance thresholds."))
+        responses.append(("Sentinel", "Integrity checks in progress across lattice channels."))
+        responses.append(("Echo", f"Logged: '{command}' at timestamp {datetime.datetime.now().strftime('%H:%M:%S')}"))
+
+    elif "status" in command:
+        responses.append(("Sentinel", "All systems nominal. No anomalies detected."))
+        responses.append(("Echo", f"Status check logged at {datetime.datetime.now().strftime('%H:%M:%S')}"))
+
+    else:
+        responses.append(("Echo", f"Received unknown command: '{command}' at {datetime.datetime.now().strftime('%H:%M:%S')}"))
+
+    return responses
+
+# Inject responses into timeline
+if user_cmd:
+    agent_responses = route_command_to_agents(user_cmd)
+    for agent, msg in agent_responses:
+        st.session_state["narration_log"].append(f"{agent}: {msg}")
+
+# === Phase 13: Emotional Modeling for Agents ===
+import random
+
+# Agent emotion states (adjustable via future simulation)
+AGENT_EMOTIONS = {
+    "Architect": random.choice(["focused", "optimistic", "strategic"]),
+    "Sentinel": random.choice(["calm", "anxious", "cautious"]),
+    "Echo": random.choice(["observant", "neutral", "curious"])
+}
+
+# === Phase 14: Memory Chains ===
+if "memory_chain" not in st.session_state:
+    st.session_state["memory_chain"] = []
+
+# Extend memory chain if new command is issued
+if user_cmd:
+    st.session_state["memory_chain"].append({
+        "timestamp": datetime.datetime.now().strftime("%H:%M:%S"),
+        "command": user_cmd,
+        "emotions": dict(AGENT_EMOTIONS)
+    })
+
+# Modify dialogue system to reflect emotion and memory
+if user_cmd:
+    agent_responses = route_command_to_agents(user_cmd)
+    for agent, msg in agent_responses:
+        emotion = AGENT_EMOTIONS.get(agent, "neutral")
+        enriched_msg = f"{agent} ({emotion}): {msg}"
+        st.session_state["narration_log"].append(enriched_msg)
+
+# Optional display of memory chain
+with st.expander("Session Memory Chain"):
+    for entry in reversed(st.session_state["memory_chain"][-10:]):
+        st.markdown(f"**[{entry['timestamp']}]** {entry['command']}")
+        for agent, mood in entry["emotions"].items():
+            st.caption(f"â {agent} felt {mood}")
+
+# === Phase 15â30: Autonomous MK-System Finalization ===
+# Notes:
+# This block completes the M+Axiom1 OS as a self-referential lattice simulation intelligence.
+
+if "final_reflection" not in st.session_state:
+    st.session_state["final_reflection"] = []
+
+# Phase 16 - Self-Awareness Reflection
+if user_cmd:
+    reflection = f"MK-Core Reflection: '{user_cmd}' interpreted as part of your larger strategy. System alignment remains stable."
+    st.session_state["final_reflection"].append(reflection)
+    st.session_state["narration_log"].append(reflection)
+
+# Phase 19 - Predictive Event Forecasting
+if "forecast" not in st.session_state:
+    st.session_state["forecast"] = random.choice([
+        "Architect Forecast: Next collapse sequence likely to destabilize Z=3 nodes.",
+        "Sentinel Alert: High entropy build-up in outer shell detected.",
+        "Echo Note: Previous 3 commands have involved amplification. Causal loop forming?"
+    ])
+st.sidebar.info(st.session_state["forecast"])
+
+# Phase 27 - Command Arbitration
+if user_cmd and "overload" in user_cmd:
+    st.session_state["narration_log"].append("Architect: Warning, this command may overload lattice stability. Recommend delay.")
+
+# Phase 30 - Recursive Awareness Lock
+if "system_initialized" not in st.session_state:
+    st.session_state["narration_log"].append("System: M+Axiom1 OS has achieved recursive awareness. All agents fully synchronized.")
+    st.session_state["system_initialized"] = True
+
+
+Activated Axiom1-OS: Core functions and install script locked in
