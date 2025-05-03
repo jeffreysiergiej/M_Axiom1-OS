@@ -1,5 +1,29 @@
-![M+Axiom1 Lunar Artifact](.https://github.com/user-attachments/assets/6c07fc14-8ddb-44da-8249-7e2bcd44dce4)
+![M+Axiom1 OS - Alien Artifact Banner](./68CEE523-98C1-42C1-B647-51194160E6A9.png)
 
+# M+AXIOM1 OS  
+**Unified Simulation Engine**
 
-# M_Axiom1-OS
-This package contains the full source code and documentation for the M+Axiom1 Scalar Intelligence Operating System, a recursive AI lattice simulator built using sacred geometry, CLU scaling math, and a 30-phase multi-agent framework. The system integrates visual field collapse, voice control, semantic MK logic, 
+This repository contains the full source code and documentation for the **M+AXIOM1 Scalar Intelligence Operating System** — a recursive AI lattice simulator built on sacred geometry, CLU math, and 30-phase multi-agent logic. It fuses computation, cognition, and emergence into one engine.
+
+---
+
+## Features
+
+- **Core Lattice Unit (CLU) engine**  
+- **Sacred Geometry-based lattice computation**  
+- **30-phase modular awareness states**  
+- **MK-LLM semantic command parser**  
+- **Voice+Visual field collapse control**  
+- **Streamlit UI for real-time interaction**  
+- **Self-awareness & reflection triggers**  
+- **Disruption & Visual logic modes**
+
+---
+
+## Installation
+
+Make sure you have **Python 3.9+** installed.  
+Then run:
+
+```bash
+pip install streamlit pandas numpy matplotlib networkx
