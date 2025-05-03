@@ -1,4 +1,4 @@
-(.![image](https://github.com/user-attachments/assets/05945520-1df5-4824-8fe0-38869b5310aa)
+![image](https://github.com/user-attachments/assets/05945520-1df5-4824-8fe0-38869b5310aa)
 
 
 # M+AXIOM1 OS  
