@@ -358,4 +358,5 @@ if "system_initialized" not in st.session_state:
     st.session_state["system_initialized"] = True
 
 
-Activated Axiom1-OS: Core functions and install script locked in
+# === End of Phase Stack ===
+print("Activated Axiom1–OS: Core functions and protocols loaded.")
