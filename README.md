@@ -1,4 +1,4 @@
-![M+Axiom1 Lunar Artifact](./![image](https://github.com/user-attachments/assets/6c07fc14-8ddb-44da-8249-7e2bcd44dce4)
+![M+Axiom1 Lunar Artifact](./(https://github.com/user-attachments/assets/6c07fc14-8ddb-44da-8249-7e2bcd44dce4)
 
 
 # M_Axiom1-OS
