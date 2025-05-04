@@ -1,15 +1,21 @@
-© 2025 Jeff Siergiej. All rights reserved.
+# NOTICE
 
-This software and all associated materials—including code, structure, visuals, architecture, and documents—are the sole intellectual property of Jeff Siergiej.
+**M+AXIOM1 OS — Unified Simulation Engine**
 
-### Restrictions:
-- No commercial use
-- No redistribution
-- No derivative works
-- No public or private hosting
+This software and all associated components, including but not limited to source code, system architecture, diagrams, logic layers, visual assets, and documentation, are the **original intellectual property of Jeffrey Siergiej**.
 
-Use of this system for **any purpose**—educational, research, display, commercial, or collaborative—requires **explicit written permission** from the author.
+## Author & Creator:
+**Jeffrey Siergiej**  
+Email: jeffsiergiej@gmail.com  
+Project: The Quantum Grid Initiative  
+Model Reference: A+M[S], CLU, SFEE, MK–LLM
 
-Violators will be prosecuted under applicable copyright and intellectual property laws.
+## Ownership Verification:
+This project is protected under copyright and digital signature systems.  
+Any attempt to clone, rebrand, monetize, or distribute this system without **explicit written authorization** is a violation of intellectual property law.
 
-**Contact:** jeffsiergiej@gmail.com
+**For licensing, research access, or technical collaboration**, contact the author directly.
+
+> All code modules include embedded authorship metadata and digital watermarking to ensure originality trace.
+
+**© 2025 Jeff Siergiej. All rights reserved.**
