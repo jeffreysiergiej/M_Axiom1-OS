@@ -1,0 +1,64 @@
+# M+Axiom1 OS – Streamlit UI Interface
+# Author: Jeff Siergiej
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import random
+
+# === Global Toggle States ===
+st.set_page_config(layout="centered")
+AGENT_LOGIC_ENABLED = st.sidebar.checkbox("Enable Agent Logic", value=True)
+DISRUPT_MODE = st.sidebar.selectbox("Disruption Mode", ["None", "Amplify", "Invert"])
+VISUAL_MODE  = st.sidebar.selectbox("Visual Style", ["Grid Collapse", "Spiral Flow", "Waveform"])
+
+# === MK–LLM Semantic Parser ===
+st.sidebar.markdown("### MK–LLM Semantic Command")
+user_cmd = st.sidebar.text_input("Enter command directive:")
+
+if user_cmd:
+    cmd = user_cmd.lower()
+
+    if "disable agent" in cmd:
+        AGENT_LOGIC_ENABLED = False
+        st.sidebar.success("Agent logic disabled.")
+    elif "enable agent" in cmd:
+        AGENT_LOGIC_ENABLED = True
+        st.sidebar.success("Agent logic enabled.")
+    elif "disruptors off" in cmd:
+        DISRUPT_MODE = "None"
+        st.sidebar.info("Disruptors disabled.")
+    elif "amplify" in cmd:
+        DISRUPT_MODE = "Amplify"
+        st.sidebar.success("Amplification engaged.")
+    elif "invert" in cmd:
+        DISRUPT_MODE = "Invert"
+        st.sidebar.success("Inversion engaged.")
+    elif "grid" in cmd:
+        VISUAL_MODE = "Grid Collapse"
+        st.sidebar.info("Grid collapse visual active.")
+    elif "spiral" in cmd:
+        VISUAL_MODE = "Spiral Flow"
+        st.sidebar.info("Spiral dynamics visual active.")
+    elif "wave" in cmd:
+        VISUAL_MODE = "Waveform"
+        st.sidebar.info("Waveform rendering selected.")
+
+# === Phase Forecast (Placeholder AI Output) ===
+if "forecast" not in st.session_state:
+    st.session_state["forecast"] = random.choice([
+        "Architect Forecast: Next collapse in 36h.",
+        "Echo Alert: Scalar instability ahead.",
+        "Pulse: Resonance field spiked 7.3%"
+    ])
+st.sidebar.info(st.session_state["forecast"])
+
+# === System State Init ===
+if "system_initialized" not in st.session_state:
+    st.session_state["system_initialized"] = True
+    st.sidebar.success("System Initialized (Phase 30)")
+
+# === Display Terminal ===
+st.title("M+AXIOM1 Unified Simulation Engine")
+st.markdown("#### Scalar Lattice Core Active")
+st.code("Command: Voice + MK–LLM Parser Online")
